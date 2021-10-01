@@ -7,7 +7,7 @@ from flask_bcrypt import Bcrypt
 
 
 from flask.app import Flask
-from config import Config
+from config import Config, ConfigNames
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -16,9 +16,9 @@ jwt = JWT()
 from src.utils.register_endpoints import register_api_endpoints, register_docs
 
 
-def create_app() -> Flask:
-    app = Flask(__name__, instance_relative_config=True)
-    app.config.from_object(Config)
+def create_app(config: Config = ConfigNames.DEVELOPMENT) -> Flask:
+    app = Flask(__name__, instance_relative_config=True, )
+    app.config.from_object(config.value)
     app.config['JWT_SECRET_KEY'] = 'super-secret'
 
     db.init_app(app)

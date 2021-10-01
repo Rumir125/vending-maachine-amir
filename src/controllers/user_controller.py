@@ -41,7 +41,7 @@ class UserDepositResource(MethodResource, Resource):
     @marshal_with(BaseResponseSchema, code=HTTPStatus.NOT_FOUND, description="User not found ")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.FORBIDDEN, description="Something went wrong. Try again.")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.BAD_REQUEST, description="Invalid deposit value")
-    def post(self, **kwargs):
+    def patch(self, **kwargs):
         return UserService.deposit(kwargs)
 
 
@@ -55,7 +55,8 @@ class UserBuyResource(MethodResource, Resource):
     @marshal_with(UserBuyResponseSchema, code=HTTPStatus.OK, description="Product bought successfully")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.FORBIDDEN, description="Something went wrong. Please try again")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.NOT_FOUND, description="Product doesn't exist")
-    @marshal_with(BaseResponseSchema, code=HTTPStatus.BAD_REQUEST, description="You don't have enough money or or request amount is not available")
+    @marshal_with(BaseResponseSchema, code=HTTPStatus.BAD_REQUEST, description="Your request amount is not available")
+    @marshal_with(BaseResponseSchema, code=HTTPStatus.CONFLICT, description="Your don't have enough money to buy product")
     def post(self, **kwargs):
         return UserService.buy_product(kwargs)
 
@@ -63,7 +64,6 @@ class UserBuyResource(MethodResource, Resource):
 @doc(tags=["User"])
 class UserResource(MethodResource, Resource):
 
-    @jwt.check_token
     @does_user_exist
     @marshal_with(UserResponseSchema, code=HTTPStatus.OK, description="User was found")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.NOT_FOUND, description="User doesn't exist")
@@ -71,16 +71,15 @@ class UserResource(MethodResource, Resource):
     def get(self, user_id):
         return UserService.get_user(user_id)
 
-    @jwt.check_token
     @does_user_exist
     @use_kwargs(UserUpdateRequestSchema, location=("json"))
     @marshal_with(UserResponseSchema, code=HTTPStatus.OK, description="User was updated")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.NOT_FOUND, description="User doesn't exist")
+    @marshal_with(BaseResponseSchema, code=HTTPStatus.CONFLICT, description="Username already taken")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.FORBIDDEN, description="Somehing went wrong.")
     def put(self, user_id, **kwargs):
         return UserService.update_user(user_id, kwargs)
 
-    @jwt.check_token
     @does_user_exist
     @marshal_with(BaseResponseSchema, code=HTTPStatus.OK, description="User was deleted successfully")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.NOT_FOUND, description="User doesn't exist")

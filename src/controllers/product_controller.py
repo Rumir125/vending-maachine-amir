@@ -41,7 +41,7 @@ class ProductResource(MethodResource, Resource):
     @is_role_valid(UserRolesEnum.SELLER)
     @has_valid_seller
     @use_kwargs(ProductSchema, location=("json"))
-    @marshal_with(BaseResponseSchema, code=HTTPStatus.OK, description="Product updated successfully")
+    @marshal_with(ProductSchema, code=HTTPStatus.OK, description="Product updated successfully")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.FORBIDDEN, description="Something went wrong. Try again.")
     @marshal_with(BaseResponseSchema, code=HTTPStatus.NOT_FOUND, description="Product doesn't exist")
     def put(self, product_id, **kwargs):

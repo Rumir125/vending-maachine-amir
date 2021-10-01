@@ -43,7 +43,7 @@ class ProductService():
             product.cost = request_data["cost"]
             product.save()
 
-            return {"message": "Product updated successfully"}, HTTPStatus.OK
+            return product, HTTPStatus.OK
 
         except:
             return {"message" : "Something went wrong. Try again"}, HTTPStatus.FORBIDDEN

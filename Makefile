@@ -16,3 +16,17 @@ migrate:
 	. venv/bin/activate; \
 	flask db migrate; \ 
 	flask db upgrade
+
+run:
+	. venv/bin/activate; \
+	flask run
+
+test:
+	. venv/bin/activate; \
+	pytest
+
+coverage:
+	. venv/bin/activate; \
+	coverage run -m pytest -vv; \
+
+all: install db run

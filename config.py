@@ -2,14 +2,17 @@ import os
 from os.path import dirname, join
 from dotenv import load_dotenv
 from distutils.util import strtobool
+from enum import Enum
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 dotenv_path = join(dirname(__file__), ".env")
 
 load_dotenv(dotenv_path)
 
+DB_ECHO = strtobool(os.environ.get('DB_ECHO', 'False'))
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "root")
 DB_HOST = os.environ.get("DB_HOST", "localhost")
@@ -43,6 +46,7 @@ spec.components.security_scheme("Authorization", api_key_scheme)
 
 class Config(object):
 
+    SQLALCHEMY_ECHO = DB_ECHO
     SQLALCHEMY_DATABASE_URI = DB_URL
     SQLALCHEMY_TRACK_MODIFICATIONS = DB_TRACK_MODIFICATIONS
 
@@ -61,3 +65,28 @@ class Config(object):
     # Api config
     APISPEC_SPEC = spec
     APISPEC_SWAGGER_URL = '/swagger/'
+
+    TESTING = True
+
+class ProductionConfig(Config):
+    pass
+
+
+class DevelopmentConfig(Config):
+    TESTING = False
+    SQLALCHEMY_DATABASE_URI = DB_URL
+
+
+class TestingConfig(Config):
+    SQLALCHEMY_DATABASE_URI = DB_TEST_URL
+
+
+class ConfigNames(Enum):
+    PRODUCTION = ProductionConfig
+    DEVELOPMENT = DevelopmentConfig
+    TESTING = TestingConfig
+
+    @staticmethod
+    def from_str(label: str):
+        label = label.upper()
+        return ConfigNames[label]

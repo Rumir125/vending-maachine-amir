@@ -32,7 +32,7 @@ class UserService:
 
             user = User(**login_request)
             user.save()
-            return user.generate_access_token()
+            return user.generate_access_token(), HTTPStatus.CREATED
         except:
             return {"message": "Something went wrong"}, HTTPStatus.FORBIDDEN
 
@@ -45,7 +45,7 @@ class UserService:
                 return {"message": f"User with id: {user_id} doesn't exist"}, HTTPStatus.NOT_FOUND
 
             if not deposit_request["deposit"] in UserService.allowed_coins:
-                return {"message": f"Only {', '.join([str(coin) for coin in UserService.allowed_coins])} coins allowed"}, HTTPStatus.BAD_REQUEST
+                return {"message": f"Only {', '.join([str(coin) for coin in UserService.allowed_coins])} coins allowed"}, HTTPStatus.CONFLICT
             
             user.deposit =  user.deposit + deposit_request["deposit"]
             user.save()
@@ -65,14 +65,17 @@ class UserService:
             
             
             user = User.query.filter_by(id=payload.user_id).first()
+            if user is None:
+                return{"message":"User was not found"}, HTTPStatus.NOT_FOUND
+
             amount = buy_request["amount"]
 
             if product.amount_available < amount:
-                return {"message" : f"There is less than {amount} products available"}, HTTPStatus.BAD_REQUEST
+                return {"message" : f"There is less than {amount} products available"}, HTTPStatus.CONFLICT
 
             total_cost = product.cost * buy_request["amount"]
             if total_cost > user.deposit:
-                return {"message" : "You don't have enough money in deposit to buy a product"}, HTTPStatus.BAD_REQUEST
+                return {"message" : "You don't have enough money in deposit to buy a product"}, HTTPStatus.CONFLICT
 
             user.deposit = user.deposit - total_cost
             user.save()
@@ -84,7 +87,8 @@ class UserService:
                 "product_id": product.id,
                 "message":"You  bought a product successfully",
                 "money_left": user.deposit,
-                "amount_bought" : amount}, HTTPStatus.OK,
+                "amount_bought" : amount,
+                "change": UserService.calculate_change(user.deposit)}, HTTPStatus.OK,
         except:
             return {"message": "Something went wrong. Please try again"}, HTTPStatus.FORBIDDEN
 
@@ -92,7 +96,7 @@ class UserService:
     def get_user(user_id):
         try:
             user = User.get_by_id(user_id)
-            return user
+            return user, HTTPStatus.OK
         except:
             return {"message":" Something went wrong. Try again"}, HTTPStatus.FORBIDDEN
 
@@ -100,8 +104,13 @@ class UserService:
     def update_user(user_id, request_data):
         try:
             user = User.query.filter_by(id=user_id).first()
+
+            username = request_data["username"]
+            duplicate_user = User.query.filter_by(username=username).first()
+            if user.username != username and duplicate_user:
+                return {"message":"Username already taken"}, HTTPStatus.CONFLICT
             user.update(**request_data)
-            
+
             return user, HTTPStatus.OK
         except:
             return {"message":" Something went wrong. Try again"}, HTTPStatus.FORBIDDEN
@@ -126,3 +135,11 @@ class UserService:
             return {"message": "User deposit was reset successfully"}, HTTPStatus.OK
         except:
             return {"message":" Something went wrong. Try again"}, HTTPStatus.FORBIDDEN
+
+    def calculate_change(total_amount):
+        change = []
+        for coin in UserService.allowed_coins:
+            amount = (total_amount // coin)
+            total_amount -= (total_amount // coin) * coin
+            change.append({"amount": amount, "coin": coin})
+        return change
