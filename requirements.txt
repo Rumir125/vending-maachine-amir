@@ -12,7 +12,6 @@ dataclasses==0.8
 flake8==3.9.2
 Flask==2.0.1
 flask-apispec==0.11.0
-Flask-JWT-Simple==0.0.3
 Flask-Migrate==3.1.0
 Flask-RESTful==0.3.9
 Flask-SQLAlchemy==2.5.1

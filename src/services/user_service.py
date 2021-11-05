@@ -39,7 +39,8 @@ class UserService:
     @staticmethod
     def deposit(deposit_request):
         try:
-            user_id = deposit_request["user_id"]
+            payload = jwt.decode(request.headers["Authorization"])
+            user_id = payload.user_id
             user = User.query.filter_by(id=user_id).first()
             if user is None:
                 return {"message": f"User with id: {user_id} doesn't exist"}, HTTPStatus.NOT_FOUND

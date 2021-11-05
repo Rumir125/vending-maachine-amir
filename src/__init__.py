@@ -25,8 +25,6 @@ def create_app(config: Config = ConfigNames.DEVELOPMENT) -> Flask:
     bcrypt.init_app(app)
     jwt.init_app(app)
 
-    # jwt.init_app(app)
-
     api = Api(app)
     docs = FlaskApiSpec(app)
 

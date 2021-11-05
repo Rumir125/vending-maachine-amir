@@ -29,7 +29,6 @@ class UserResponseSchema(Schema):
 
 
 class DepositRequestSchema(Schema):
-    user_id = fields.Int()
     deposit = fields.Int()
 
 

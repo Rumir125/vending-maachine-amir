@@ -3,7 +3,6 @@ from http import HTTPStatus
 from flask_apispec.annotations import doc
 from src.schemas.help_schemas import BaseResponseSchema
 from src.schemas.auth_schemas import LoginRequestSchema, LoginResponseSchema
-from flask import make_response
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from flask_apispec import use_kwargs, marshal_with
